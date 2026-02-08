@@ -6,9 +6,12 @@ import AttendanceTable from "./AttendanceTable";
 const Attendance = () => {
   const [date, setDate] = useState("");
   const [attendance, setAttendance] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleLoad = async () => {
     if (!date) return;
+
+    setLoading(true);
 
     try {
       // Fetch employees
@@ -34,8 +37,8 @@ const Attendance = () => {
           attendanceMap[employee.id] === undefined
             ? "Absent"
             : attendanceMap[employee.id]
-              ? "Present"
-              : "Absent",
+            ? "Present"
+            : "Absent",
       }));
 
       mergedData.sort((a, b) =>
@@ -46,6 +49,8 @@ const Attendance = () => {
     } catch (error) {
       console.error(error);
       alert("Failed to load attendance");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,6 +73,8 @@ const Attendance = () => {
   const submitAttendance = async () => {
     if (!date) return;
 
+    setLoading(true);
+
     try {
       const res = await fetch("/api/attendance", {
         method: "POST",
@@ -88,14 +95,14 @@ const Attendance = () => {
         return;
       }
 
-      // Reset state after successful submission
       setAttendance([]);
       setDate("");
-
       alert("Attendance submitted successfully");
     } catch (error) {
       console.error(error);
       alert("Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,12 +129,19 @@ const Attendance = () => {
 
         <button
           onClick={handleLoad}
-          disabled={!date}
-          className="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50 cursor-pointer disabled:cursor-default"
+          disabled={!date || loading}
+          className="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50 disabled:cursor-default"
         >
-          Load
+          {loading ? "Loading..." : "Load"}
         </button>
       </div>
+
+      {/* Loading indicator */}
+      {loading && attendance.length === 0 && (
+        <p className="text-sm text-gray-500 mb-4">
+          Loading attendance...
+        </p>
+      )}
 
       {/* Table */}
       <AttendanceTable
@@ -138,10 +152,10 @@ const Attendance = () => {
       <div className="mt-6 flex justify-end">
         <button
           onClick={submitAttendance}
-          disabled={!date}
-          className="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50 cursor-pointer disabled:cursor-default"
+          disabled={!date || loading}
+          className="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50 disabled:cursor-default"
         >
-          Submit
+          {loading ? "Submitting..." : "Submit"}
         </button>
       </div>
     </div>
