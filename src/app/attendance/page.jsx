@@ -6,23 +6,21 @@ import AttendanceTable from "./AttendanceTable";
 const Attendance = () => {
   const [date, setDate] = useState("");
   const [attendance, setAttendance] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLoad = async () => {
     if (!date) return;
 
-    setLoading(true);
+    setIsLoading(true);
 
     try {
-      // Fetch employees
       const empRes = await fetch("/api/employees");
       const employees = await empRes.json();
 
-      // Fetch attendance for selected date
       const attRes = await fetch(`/api/attendance?date=${date}`);
       const attendanceData = await attRes.json();
 
-      // Build attendance lookup
       const attendanceMap = {};
       attendanceData.forEach((record) => {
         attendanceMap[record.employee_id] = record.status;
@@ -37,20 +35,18 @@ const Attendance = () => {
           attendanceMap[employee.id] === undefined
             ? "Absent"
             : attendanceMap[employee.id]
-            ? "Present"
-            : "Absent",
+              ? "Present"
+              : "Absent",
       }));
 
-      mergedData.sort((a, b) =>
-        a.employee_code.localeCompare(b.employee_code)
-      );
+      mergedData.sort((a, b) => a.employee_code.localeCompare(b.employee_code));
 
       setAttendance(mergedData);
     } catch (error) {
       console.error(error);
       alert("Failed to load attendance");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -60,20 +56,17 @@ const Attendance = () => {
         employee.id === id
           ? {
               ...employee,
-              status:
-                employee.status === "Present"
-                  ? "Absent"
-                  : "Present",
+              status: employee.status === "Present" ? "Absent" : "Present",
             }
-          : employee
-      )
+          : employee,
+      ),
     );
   };
 
   const submitAttendance = async () => {
-    if (!date) return;
+    if (!date || attendance.length === 0) return;
 
-    setLoading(true);
+    setIsSubmitting(true);
 
     try {
       const res = await fetch("/api/attendance", {
@@ -102,7 +95,7 @@ const Attendance = () => {
       console.error(error);
       alert("Something went wrong");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -116,9 +109,7 @@ const Attendance = () => {
       {/* Controls */}
       <div className="mb-6 flex items-end gap-4">
         <div className="flex flex-col">
-          <label className="text-sm text-gray-600">
-            Select Date
-          </label>
+          <label className="text-sm text-gray-600">Select Date</label>
           <input
             type="date"
             value={date}
@@ -129,33 +120,28 @@ const Attendance = () => {
 
         <button
           onClick={handleLoad}
-          disabled={!date || loading}
-          className="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50 disabled:cursor-default"
+          disabled={!date || isLoading}
+          className="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50 cursor-pointer disabled:cursor-default"
         >
-          {loading ? "Loading..." : "Load"}
+          {isLoading ? "Loading..." : "Load"}
         </button>
       </div>
 
       {/* Loading indicator */}
-      {loading && attendance.length === 0 && (
-        <p className="text-sm text-gray-500 mb-4">
-          Loading attendance...
-        </p>
+      {isLoading && attendance.length === 0 && (
+        <p className="mb-4 text-sm text-gray-500">Loading attendance...</p>
       )}
 
       {/* Table */}
-      <AttendanceTable
-        data={attendance}
-        onToggleStatus={toggleStatus}
-      />
+      <AttendanceTable data={attendance} onToggleStatus={toggleStatus} />
 
       <div className="mt-6 flex justify-end">
         <button
           onClick={submitAttendance}
-          disabled={!date || loading}
-          className="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50 disabled:cursor-default"
+          disabled={isSubmitting || attendance.length === 0}
+          className="rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50 cursor-pointer disabled:cursor-default"
         >
-          {loading ? "Submitting..." : "Submit"}
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </div>
     </div>
