@@ -1,5 +1,7 @@
 # HRMS Lite
 
+Live at: [hrms-lite-rouge.vercel.app](https://hrms-lite-rouge.vercel.app)
+
 HRMS Lite is a lightweight, web-based Human Resource Management System designed to manage employee records and track daily attendance.  
 The application simulates a basic internal HR tool with a clean UI, RESTful APIs, and persistent storage.
 
