@@ -8,10 +8,13 @@ const Navbar = () => {
       
       {/* Logo / App Name */}
       <div>
+        <Link href="/">
+        
         <div className="flex items-center gap-2 mb-8 text-black">
           <FaPeopleGroup size={24} />
           <p className="text-lg font-semibold">HRMS Lite</p>
         </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="flex flex-col gap-2">
